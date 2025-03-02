@@ -16,8 +16,12 @@ const targetTerms = [
   // Helper function to fetch detailed tweet data using the v1 endpoint.
   async function enrichTweetWithDetails(scraper, tweet) {
     try {
+      console.log(`Enriching tweet ${tweet.id}...`);
+      const startTime = Date.now();
       // Use getTweet (v1) to get more details such as tweet text and timestamp.
       const detailedTweet = await scraper.getTweet(tweet.id);
+      const duration = Date.now() - startTime;
+      console.log(`Enriched tweet ${tweet.id} in ${duration}ms`);
       return detailedTweet;
     } catch (error) {
       console.error(`Error fetching details for tweet ${tweet.id}:`, error);
@@ -68,9 +72,12 @@ const targetTerms = [
   // Processes a single tweet: likes and retweets it, then waits a bit.
   async function processTweet(scraper, tweet) {
     try {
+      console.log(`Processing tweet ${tweet.id}...`);
+      const startTime = Date.now();
       await scraper.likeTweet(tweet.id);
       await scraper.retweet(tweet.id);
-      console.log(`Processed tweet ${tweet.id}`);
+      const duration = Date.now() - startTime;
+      console.log(`Processed tweet ${tweet.id} in ${duration}ms`);
       // Pause for 2 seconds between processing tweets.
       await new Promise(resolve => setTimeout(resolve, 2000));
     } catch (error) {
@@ -81,13 +88,13 @@ const targetTerms = [
   // Integrates all target terms: searches and processes tweets for each term sequentially.
   async function processAllTerms(scraper) {
     for (const term of targetTerms) {
-      console.log(`Searching tweets for: ${term}`);
+      console.log(`\n--- Searching tweets for: ${term} ---`);
       const tweets = await searchTweetsForTerm(scraper, term);
       // Process tweets one by one sequentially.
       for (const tweet of tweets) {
         await processTweet(scraper, tweet);
       }
-      console.log(`Finished processing tweets for: ${term}`);
+      console.log(`Finished processing tweets for: ${term}\n`);
     }
   }
   

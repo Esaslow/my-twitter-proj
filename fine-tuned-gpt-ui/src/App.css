@@ -1,0 +1,140 @@
+/* ========================= */
+/* Global Futuristic Styling */
+/* ========================= */
+
+body {
+  margin: 0;
+  padding: 0;
+  background: #0c0d10;
+  color: #fff;
+  font-family: 'Orbitron', sans-serif; /* Make sure this font is loaded in public/index.html */
+}
+
+/* ========================= */
+/* Full-Screen Background    */
+/* ========================= */
+
+.app-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  /* Radial gradient background */
+  background: radial-gradient(circle at center, rgba(20,20,40,0.95) 0%, #0c0d10 80%);
+  z-index: -1; /* Sits behind your UI */
+  overflow: hidden;
+  animation: neonPulse 10s linear infinite;
+}
+
+/* Neon pulse animation */
+@keyframes neonPulse {
+  0%, 100% {
+    filter: brightness(1);
+  }
+  50% {
+    filter: brightness(1.1);
+  }
+}
+
+/* Optional neon wireframe overlay */
+/* Ensure 'image (2).jpg' exists in your public folder or adjust the URL accordingly */
+.neon-wireframe {
+  background: url('image (2).jpg') center/cover no-repeat;
+  animation: moveBackground 20s linear infinite;
+}
+
+@keyframes moveBackground {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 1000px 1000px;
+  }
+}
+
+/* ========================= */
+/* MUI Component Styling     */
+/* ========================= */
+
+/* Styling for the central command console (Paper element) */
+.MuiPaper-root {
+  border: 2px solid #7e22ce; /* Neon purple border */
+  box-shadow: 0 0 20px rgba(126, 34, 206, 0.8); /* Glowing effect */
+  background-color: #1e1e1e !important; /* Dark background for the card */
+  border-radius: 16px;
+  transition: transform 0.3s ease;
+}
+
+.MuiPaper-root:hover {
+  transform: scale(1.02);
+}
+
+/* MUI TextField input styling */
+.MuiTextField-root input {
+  background-color: #121212;
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 8px;
+}
+
+/* MUI Button styling */
+.MuiButton-contained {
+  background-color: #7e22ce;
+  color: #fff;
+  font-weight: bold;
+  box-shadow: 0 0 8px rgba(217, 70, 239, 0.7);
+  transition: background-color 0.3s, box-shadow 0.3s;
+}
+
+.MuiButton-contained:hover {
+  background-color: #d946ef;
+  box-shadow: 0 0 12px rgba(217, 70, 239, 0.9);
+}
+
+/* ========================= */
+/* Tag Input Styling         */
+/* ========================= */
+
+.tag-input-container {
+  display: flex;
+  flex-wrap: wrap;
+  border: 1px solid #333;
+  padding: 8px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+  background-color: #121212;
+}
+
+.tag-bubble {
+  background-color: #7e22ce;
+  color: #fff;
+  padding: 6px 12px;
+  margin: 4px;
+  border-radius: 20px;
+  box-shadow: 0 0 6px rgba(126, 34, 206, 0.7);
+  font-size: 0.9rem;
+}
+
+.tag-input-container input {
+  flex: 1;
+  border: none;
+  outline: none;
+  padding: 6px;
+  background-color: transparent;
+  color: #fff;
+  font-size: 1rem;
+}
+
+/* ========================= */
+/* Container Centering       */
+/* ========================= */
+
+.MuiContainer-root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 16px;
+}
