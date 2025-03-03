@@ -63,29 +63,32 @@ async def load_process_status():
         processes = {}
 
 
-async def save_latest_process_ids(process_id, username_count):
-    """Save the last 20 process IDs with their username count to a file."""
+async def save_latest_process_ids(session_id, username_count, process_ids):
+    """Save the last 20 scraping sessions with process IDs."""
     try:
-        # Load existing process data
         if os.path.exists(LATEST_PROCESS_IDS_FILE):
             async with aiofiles.open(LATEST_PROCESS_IDS_FILE, "r") as f:
                 content = await f.read()
-                process_data = json.loads(content) if content else []
+                session_data = json.loads(content) if content else []
         else:
-            process_data = []
+            session_data = []
 
-        # Append new process ID with its username count
-        process_data.append({"process_id": process_id, "username_count": username_count})
-        process_data = process_data[-20:]  # Keep only the last 20 records 
+        # ✅ Append new session info
+        session_data.append({
+            "session_id": session_id,
+            "username_count": username_count,
+            "process_ids": process_ids  # ✅ Store process IDs for each username
+        })
 
-        # ✅ Save updated list
+        session_data = session_data[-20:]  # ✅ Keep only last 20 sessions
+
         async with aiofiles.open(LATEST_PROCESS_IDS_FILE, "w") as f:
-            await f.write(json.dumps(process_data, indent=2))
+            await f.write(json.dumps(session_data, indent=2))
 
-        print(f"\033[95m[DEBUG] Stored latest process data: {process_data}\033[0m")
+        print(f"\033[95m[DEBUG] Stored latest session data: {session_data}\033[0m")
 
     except Exception as e:
-        print(f"\033[91m[ERROR] Failed to save latest process data: {str(e)}\033[0m")
+        print(f"\033[91m[ERROR] Failed to save session data: {str(e)}\033[0m")
 
 
 async def load_latest_process_ids():
@@ -155,30 +158,42 @@ async def run_scraping_task(process_id, username, tweet_count):
 
 @app.post("/api/start-process")
 async def start_scraping(request: ScrapeRequest):
-    """Endpoint to start a new scraping process."""
-    process_id = str(uuid.uuid4())
-    username_count = len(request.username.split(","))  # Count usernames
-    print("\033[34m" + f"[INFO] Received request: username={request.username}, tweet_count={request.tweet_count} (Process ID: {process_id})" + "\033[0m")
+    """Start a scraping session for multiple usernames."""
+    session_id = str(uuid.uuid4())  # ✅ ONE session ID for all usernames
+    usernames = [u.strip() for u in request.username.split(",") if u.strip()]  # ✅ Extract usernames correctly
+    username_count = len(usernames)  # ✅ Count usernames
+
+    print(f"\033[34m[INFO] Starting session {session_id} with {username_count} usernames.\033[0m")
+
+    process_ids = {}  # Store process IDs for each username
 
     try:
         async with process_lock:
-            processes[process_id] = {
-                "status": "queued",
-                "tweets": [],
-                "username_count": username_count  # ✅ Store username count
-            }
-            await save_process_status()
-        
-        # ✅ Save the process ID to latest_process_ids.json
-        await save_latest_process_ids(process_id,username_count)
+            for username in usernames:
+                process_id = str(uuid.uuid4())  # ✅ Unique process ID for each username
+                process_ids[username] = process_id  # ✅ Map usernames to process IDs
 
-        asyncio.create_task(run_scraping_task(process_id, request.username, request.tweet_count))
-        print(f"[INFO] Scraping task started for process_id: {process_id}")
+                processes[process_id] = {
+                    "status": "queued",
+                    "tweets": [],
+                    "username": username
+                }
+                await save_process_status()
+
+        # ✅ Save session info with all process IDs
+        await save_latest_process_ids(session_id, username_count, process_ids)
+
+        # ✅ Start scraping for each username
+        for username, process_id in process_ids.items():
+            asyncio.create_task(run_scraping_task(process_id, username, request.tweet_count))
+
+        print(f"\033[34m[INFO] Scraping tasks started for session: {session_id}.\033[0m")
 
     except Exception as e:
-        print(f"[ERROR] Exception while starting process: {str(e)}")
+        print(f"\033[91m[ERROR] Exception while starting session: {str(e)}\033[0m")
 
-    return {"process_id": process_id}
+    return {"session_id": session_id, "process_ids": process_ids}
+
 
 @app.get("/api/process-status/{process_id}")
 async def get_process_status(process_id: str):
